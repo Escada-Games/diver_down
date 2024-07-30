@@ -1,7 +1,7 @@
 /*
 
 !.gitignore
-!.gd
-!.tscn
-!.tres
-!.cfg
+!*.gd
+!*.tscn
+!*.tres
+!*.cfg
