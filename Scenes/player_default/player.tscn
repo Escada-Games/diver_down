@@ -1,0 +1,326 @@
+[gd_scene load_steps=20 format=2]
+
+[ext_resource path="res://Scenes/player_default/player.gd" type="Script" id=1]
+[ext_resource path="res://Resources/Textures/white.png" type="Texture" id=2]
+[ext_resource path="res://Resources/MoreTextures/playerOutlined.png" type="Texture" id=3]
+[ext_resource path="res://icon.png" type="Texture" id=4]
+[ext_resource path="res://Resources/SFX/Jump.wav" type="AudioStream" id=5]
+[ext_resource path="res://Resources/SFX/Landing.wav" type="AudioStream" id=6]
+[ext_resource path="res://Resources/SFX/Dive1.wav" type="AudioStream" id=7]
+[ext_resource path="res://Resources/SFX/Dive3.wav" type="AudioStream" id=8]
+[ext_resource path="res://Resources/SFX/Dive2.wav" type="AudioStream" id=9]
+[ext_resource path="res://Resources/MoreTextures/vignette.png" type="Texture" id=10]
+[ext_resource path="res://Scenes/camera2D.gd" type="Script" id=11]
+
+[sub_resource type="Animation" id=1]
+resource_name = "going_down"
+tracks/0/type = "value"
+tracks/0/path = NodePath("sprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 1,
+"values": [ 8 ]
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath("eyes:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ Vector2( 0, 0 ) ]
+}
+
+[sub_resource type="Animation" id=2]
+resource_name = "going_up"
+tracks/0/type = "value"
+tracks/0/path = NodePath("sprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 1,
+"values": [ 6 ]
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath("eyes:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ Vector2( 0, 2 ) ]
+}
+
+[sub_resource type="Animation" id=3]
+resource_name = "idle"
+loop = true
+tracks/0/type = "value"
+tracks/0/path = NodePath("sprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.5 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ 0, 1 ]
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath("eyes:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0, 0.5 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ Vector2( 0, -8 ), Vector2( 0, -7 ) ]
+}
+
+[sub_resource type="Animation" id=4]
+resource_name = "walk"
+length = 0.6
+loop = true
+step = 0.05
+tracks/0/type = "value"
+tracks/0/path = NodePath("sprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.15, 0.3, 0.45 ),
+"transitions": PoolRealArray( 1, 1, 1, 1 ),
+"update": 1,
+"values": [ 2, 3, 4, 5 ]
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath("eyes:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0, 0.2, 0.4, 0.6 ),
+"transitions": PoolRealArray( 1, 1, 1, 1 ),
+"update": 1,
+"values": [ Vector2( 0, 1 ), Vector2( 0, 1 ), Vector2( 0, 1 ), Vector2( 0, 1 ) ]
+}
+tracks/2/type = "method"
+tracks/2/path = NodePath(".")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/keys = {
+"times": PoolRealArray( 0, 0.3 ),
+"transitions": PoolRealArray( 1, 1 ),
+"values": [ {
+"args": [  ],
+"method": "footstepSfx"
+}, {
+"args": [  ],
+"method": "footstepSfx"
+} ]
+}
+
+[sub_resource type="RectangleShape2D" id=5]
+extents = Vector2( 4, 7 )
+
+[sub_resource type="CapsuleShape2D" id=6]
+radius = 4.0
+height = 8.0
+
+[sub_resource type="GDScript" id=7]
+script/source = "extends Node2D
+
+const green=Color('afff00')#Color('84ad42')
+const red=Color('c0461f')
+
+func _ready() -> void:
+	set_process(true)
+	
+func _process(_delta) -> void:
+	var phaseable=true
+	for body in $dive_aim.get_overlapping_bodies(): if body.is_in_group('Unphaseable'): phaseable=false
+	
+	if phaseable:
+		if get_parent().state==get_parent().State_normal:
+			$dive_aim/polygon_2d.color=green if $dive_aim.get_overlapping_bodies().size()>0 else red
+		else:
+			$dive_aim/polygon_2d.color=red if $dive_aim.get_overlapping_bodies().size()>0 else green
+	else:
+		$dive_aim/polygon_2d.color=red
+"
+
+[sub_resource type="RectangleShape2D" id=8]
+extents = Vector2( 0.1, 0.1 )
+
+[node name="player" type="KinematicBody2D"]
+z_as_relative = false
+script = ExtResource( 1 )
+color_spritetrail = Color( 1, 1, 1, 1 )
+
+[node name="camera2D" type="Camera2D" parent="."]
+limit_left = 0
+limit_top = 0
+limit_right = 384
+limit_bottom = 216
+script = ExtResource( 11 )
+
+[node name="animation_player" type="AnimationPlayer" parent="."]
+autoplay = "idle"
+anims/going_down = SubResource( 1 )
+anims/going_up = SubResource( 2 )
+anims/idle = SubResource( 3 )
+anims/walk = SubResource( 4 )
+
+[node name="twn_squishy" type="Tween" parent="."]
+
+[node name="twn_dive" type="Tween" parent="."]
+
+[node name="twn_fadeout" type="Tween" parent="."]
+
+[node name="collision_shape_2d" type="CollisionShape2D" parent="."]
+position = Vector2( 0, -7 )
+shape = SubResource( 5 )
+
+[node name="collision_shape_2d2" type="CollisionShape2D" parent="."]
+position = Vector2( 0, -8 )
+shape = SubResource( 6 )
+disabled = true
+
+[node name="eyes" type="Sprite" parent="."]
+visible = false
+position = Vector2( 0, -8 )
+z_index = 10
+z_as_relative = false
+
+[node name="sprite2" type="Sprite" parent="eyes"]
+position = Vector2( -1, -5 )
+scale = Vector2( 1, 2 )
+texture = ExtResource( 2 )
+centered = false
+
+[node name="sprite3" type="Sprite" parent="eyes"]
+position = Vector2( 1, -5 )
+scale = Vector2( 1, 2 )
+texture = ExtResource( 2 )
+centered = false
+
+[node name="sprite" type="Sprite" parent="."]
+use_parent_material = true
+position = Vector2( 0, -1 )
+texture = ExtResource( 3 )
+offset = Vector2( 0, -8 )
+hframes = 9
+
+[node name="timers" type="Node2D" parent="."]
+position = Vector2( 0, -7 )
+
+[node name="tmr_spritetrail" type="Timer" parent="timers"]
+wait_time = 0.001
+one_shot = true
+
+[node name="tmr_invencibility" type="Timer" parent="timers"]
+
+[node name="area_2d" type="Area2D" parent="."]
+position = Vector2( 0, -9 )
+
+[node name="collision_shape_2d" type="CollisionShape2D" parent="area_2d"]
+shape = SubResource( 5 )
+
+[node name="dive_aim" type="Node2D" parent="."]
+position = Vector2( 0, -9 )
+z_index = 100
+z_as_relative = false
+script = SubResource( 7 )
+
+[node name="dive_aim" type="Area2D" parent="dive_aim"]
+position = Vector2( 20, 0 )
+
+[node name="sprite" type="Sprite" parent="dive_aim/dive_aim"]
+visible = false
+scale = Vector2( 0.0625, 0.0625 )
+texture = ExtResource( 4 )
+
+[node name="polygon2dBg" type="Polygon2D" parent="dive_aim/dive_aim"]
+position = Vector2( -2, 0 )
+scale = Vector2( 1.2, 1.2 )
+color = Color( 0, 0, 0, 1 )
+polygon = PoolVector2Array( -5, -2, -7, 0, -5, 2, 3, 0 )
+vertex_colors = PoolColorArray( 0.3, 0.3, 0.3, 0.9, 0.3, 0.3, 0.3, 0.5, 0.3, 0.3, 0.3, 0.9 )
+
+[node name="polygon_2d" type="Polygon2D" parent="dive_aim/dive_aim"]
+position = Vector2( -3, 0 )
+polygon = PoolVector2Array( -5, -2, -7, 0, -5, 2, 3, 0 )
+vertex_colors = PoolColorArray( 0.3, 0.3, 0.3, 0.9, 0.3, 0.3, 0.3, 0.5, 0.3, 0.3, 0.3, 0.9 )
+
+[node name="collision_polygon_2d" type="CollisionPolygon2D" parent="dive_aim/dive_aim"]
+polygon = PoolVector2Array( 0, 0, -1, -1, -1, 1 )
+disabled = true
+
+[node name="collision_shape_2d" type="CollisionShape2D" parent="dive_aim/dive_aim"]
+shape = SubResource( 8 )
+
+[node name="position_2d" type="Position2D" parent="dive_aim/dive_aim"]
+
+[node name="sounds" type="Node2D" parent="."]
+
+[node name="snd_jump" type="AudioStreamPlayer" parent="sounds"]
+stream = ExtResource( 5 )
+bus = "sfx"
+
+[node name="snd_land" type="AudioStreamPlayer" parent="sounds"]
+stream = ExtResource( 6 )
+volume_db = 8.0
+bus = "sfx"
+
+[node name="snd_dive" type="AudioStreamPlayer" parent="sounds"]
+stream = ExtResource( 7 )
+volume_db = -1.0
+bus = "sfx"
+
+[node name="snd_dive1" type="AudioStreamPlayer" parent="sounds"]
+stream = ExtResource( 8 )
+volume_db = -4.0
+bus = "sfx"
+
+[node name="snd_dive_away" type="AudioStreamPlayer" parent="sounds"]
+stream = ExtResource( 9 )
+volume_db = -1.0
+bus = "sfx"
+
+[node name="sndFootsteps" type="AudioStreamPlayer" parent="sounds"]
+stream = ExtResource( 9 )
+volume_db = 9.0
+bus = "sfx"
+
+[node name="layerVignette" type="CanvasLayer" parent="."]
+
+[node name="sprVignette" type="Sprite" parent="layerVignette"]
+modulate = Color( 0, 0, 0, 0 )
+texture = ExtResource( 10 )
+centered = false
+
+[connection signal="tween_completed" from="twn_dive" to="." method="_on_twn_dive_tween_completed"]
+[connection signal="tween_started" from="twn_dive" to="." method="_on_twn_dive_tween_started"]
+[connection signal="timeout" from="timers/tmr_spritetrail" to="." method="_on_tmr_spritetrail_timeout"]
+[connection signal="timeout" from="timers/tmr_invencibility" to="." method="_on_tmr_invencibility_timeout"]

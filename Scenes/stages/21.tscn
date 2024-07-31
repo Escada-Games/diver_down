@@ -1,0 +1,122 @@
+[gd_scene load_steps=7 format=2]
+
+[ext_resource path="res://Scenes/str_tutorial.tscn" type="PackedScene" id=1]
+[ext_resource path="res://Resources/Fonts/protracker.ttf" type="DynamicFontData" id=2]
+[ext_resource path="res://Scenes/str_stagename.tscn" type="PackedScene" id=3]
+
+[sub_resource type="GDScript" id=1]
+script/source = "extends Node2D
+
+# class member variables go here, for example:
+# var a = 2
+# var b = \"textvar\"
+
+func _ready():
+	# Called every time the node is added to the scene.
+	# Initialization here
+	pass
+
+#func _process(delta):
+#	# Called every frame. Delta is time since last frame.
+#	# Update game logic here.
+#	pass
+"
+
+[sub_resource type="DynamicFont" id=2]
+size = 8
+font_data = ExtResource( 2 )
+
+[sub_resource type="GDScript" id=3]
+script/source = "extends Label
+
+export (float) var extra_delay = 0.0
+
+func _ready() -> void:
+	self.text= str(global.minutes) + ' minutes and ' + str(global.seconds) + ' seconds.'
+	self.modulate.a=0
+	$twn_fade.interpolate_property(self, 'modulate:a', 0, 1, 1.5, Tween.TRANS_QUART, Tween.EASE_IN, 0.5+extra_delay)
+	$twn_fade.start()
+	$twn_goup.interpolate_property(self, 'rect_global_position:y', self.rect_global_position.y, self.rect_global_position.y-16, 2.0, Tween.TRANS_QUART, Tween.EASE_IN_OUT, 0.5+extra_delay)
+	$twn_goup.start()
+"
+
+[node name="21" type="Node2D"]
+script = SubResource( 1 )
+
+[node name="stage" type="Control" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_right = 384.0
+margin_bottom = 216.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="str_tutorial" parent="stage" instance=ExtResource( 1 )]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_top = 56.0
+margin_right = 0.0
+margin_bottom = 56.0
+text = "Hey, you did it! You beat the game."
+align = 1
+
+[node name="str_tutorial2" parent="stage" instance=ExtResource( 1 )]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_top = 141.0
+margin_right = 0.0
+margin_bottom = 141.0
+text = "Thanks a lot for playing! It means a lot to us."
+align = 1
+extra_delay = 3.0
+
+[node name="str_tutorial3" parent="stage" instance=ExtResource( 1 )]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_top = 90.0
+margin_right = 0.0
+margin_bottom = 90.0
+text = "In case you are interested, your time was"
+align = 1
+extra_delay = 1.0
+
+[node name="str_tutorial4" type="Label" parent="stage"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_top = 106.0
+margin_bottom = 106.0
+custom_colors/font_color_shadow = Color( 0.33, 0.33, 0.33, 1 )
+custom_fonts/font = SubResource( 2 )
+text = "<<Time here>>"
+align = 1
+script = SubResource( 3 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+extra_delay = 1.5
+
+[node name="twn_fade" type="Tween" parent="stage/str_tutorial4"]
+
+[node name="twn_goup" type="Tween" parent="stage/str_tutorial4"]
+
+[node name="str_tutorial5" type="Label" parent="stage"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_top = 202.0
+margin_bottom = 202.0
+custom_colors/font_color_shadow = Color( 0.33, 0.33, 0.33, 1 )
+custom_fonts/font = SubResource( 2 )
+text = "Uh... yeah. There's nothing more to see here."
+align = 1
+script = SubResource( 3 )
+extra_delay = 60.0
+
+[node name="twn_fade" type="Tween" parent="stage/str_tutorial5"]
+
+[node name="twn_goup" type="Tween" parent="stage/str_tutorial5"]
+
+[node name="str_stagename" parent="stage" instance=ExtResource( 3 )]
+margin_top = 272.0
+margin_bottom = 292.0
+text = "End"

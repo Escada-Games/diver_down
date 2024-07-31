@@ -1,0 +1,32 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://Resources/MoreTextures/lights.png" type="Texture" id=1]
+
+[sub_resource type="GDScript" id=1]
+resource_name = "spotlight_normal"
+script/source = "extends Node2D
+
+func _ready():
+	$area_2d/collision_polygon_2d.polygon=self.polygon
+	set_process(true)
+
+func _process(delta):
+	for body in $area_2d.get_overlapping_bodies():
+		if body.is_in_group('Player'):
+			global.reload_stage()
+"
+
+[node name="spotlight" type="Polygon2D"]
+color = Color( 0.807843, 0.678431, 0.45098, 0.25 )
+antialiased = true
+polygon = PoolVector2Array( -16.2602, 72.8509, 14.1519, 73.1745, 2, 1, -2, 1 )
+vertex_colors = PoolColorArray( 0, 0, 0, 0.25, 0, 0, 0, 0.25 )
+script = SubResource( 1 )
+
+[node name="sprite" type="Sprite" parent="."]
+texture = ExtResource( 1 )
+hframes = 2
+
+[node name="area_2d" type="Area2D" parent="."]
+
+[node name="collision_polygon_2d" type="CollisionPolygon2D" parent="area_2d"]

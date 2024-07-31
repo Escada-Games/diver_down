@@ -1,0 +1,52 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://Scenes/spotlight.tscn" type="PackedScene" id=1]
+
+[sub_resource type="GDScript" id=1]
+script/source = "extends Path2D
+
+export (bool) var loop = false
+export (float) var duration = 1.0
+var target_offset = 1
+onready var spotlight_on_rails = $path_follow_2d
+
+func _ready() -> void:
+	spotlight_on_rails.loop = self.loop
+	$twn_offset.interpolate_property(spotlight_on_rails, 'unit_offset', spotlight_on_rails.unit_offset, self.target_offset, self.duration, Tween.TRANS_SINE, Tween.EASE_IN_OUT)
+	$twn_offset.start()
+
+func _on_twn_offset_tween_completed(_object, _key) -> void:
+	self.target_offset=0 if spotlight_on_rails.unit_offset>0.9 else 1
+	_ready()
+"
+
+[sub_resource type="GDScript" id=2]
+script/source = "extends Node2D
+
+func _ready():
+	$area_2d/collision_polygon_2d.polygon=self.polygon
+	set_process(true)
+
+func _process(delta):
+	self.modulate.r=1
+	for body in $area_2d.get_overlapping_bodies():
+		if body.is_in_group('Player'):
+			global.reload_stage()
+#			get_tree().reload_current_scene() #@Make a better gameover
+#			self.modulate.r=30
+"
+
+[node name="spotlight_on_rails" type="Path2D"]
+curve = null
+script = SubResource( 1 )
+
+[node name="twn_offset" type="Tween" parent="."]
+
+[node name="path_follow_2d" type="PathFollow2D" parent="."]
+rotate = false
+loop = false
+
+[node name="spotlight" parent="path_follow_2d" instance=ExtResource( 1 )]
+script = SubResource( 2 )
+
+[connection signal="tween_completed" from="twn_offset" to="." method="_on_twn_offset_tween_completed"]

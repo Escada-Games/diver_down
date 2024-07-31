@@ -1,7 +1,5 @@
-/*
-
-!.gitignore
-!*.gd
-!*.tscn
-!*.tres
-!*.cfg
+*.png
+*.ogg
+*.mp3
+*.wav
+*.import
